@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
+using SQLite;
+using SQLite.Net;
+using SQLiteNetExtensions.Extensions;
 using VocabulaireRusse.Domain;
 namespace VocabulaireRusse.Utils
 {
     public class DeckFactory
     {
-        public static Deck GetTestDeck()
+        public static DeckSharp GetTestDeck()
         {
-            var d = new Deck();
+            var d = new DeckSharp();
             d.Add(new Card("а", "et, mais"));
             d.Add(new Card("август", "août"));
             d.Add(new Card("автобус", "autobus"));
@@ -21,9 +25,9 @@ namespace VocabulaireRusse.Utils
             return d;
         }
 
-        public static Deck GetLRUSS1100Deck()
+        public static DeckSharp GetLRUSS1100Deck()
         {
-            var d = new Deck();
+            var d = new DeckSharp();
 
            d.Add (new Card ("а", "et, mais"));
 d.Add (new Card ("август", "août"));
@@ -859,6 +863,40 @@ d.Add (new Card ("ясный", "clair, évident"));
 
 
             return d;
+        }
+
+        internal static object CreateTestDeck(SQLiteConnection db)
+        {
+            // Create the test deck
+            var deck = new Deck() { Name = "Test deck" };
+            db.Insert(deck);
+            
+            // Create three subdecks
+            var sdeck1 = new SubDeck() { Name = "Lesson 1", IsActive = true };
+            var sdeck2 = new SubDeck() { Name = "Lesson 2", IsActive = true };
+            var sdeck3 = new SubDeck() { Name = "Lesson 3", IsActive = false };
+            db.InsertAll(new [] { sdeck1, sdeck2, sdeck3 });
+            
+            // Adds the subdecks to the test decks
+            deck.SubDecks = new List<SubDeck>() { sdeck1, sdeck2, sdeck3 };
+            db.UpdateWithChildren(deck);
+            
+            // Create cards
+            var c1 = new Card("a", "a");
+            var c2 = new Card("b", "b");
+            var c3 = new Card("c", "c");
+            db.InsertAll(new [] { c1, c2, c3 });
+
+            // Adds the cards to the subdecks
+            sdeck1.Cards = new List<Card>() { c1 };
+            sdeck2.Cards = new List<Card>() { c2 };
+            sdeck3.Cards = new List<Card>() { c3 };
+            db.UpdateWithChildren(sdeck1);
+            db.UpdateWithChildren(sdeck2);
+            db.UpdateWithChildren(sdeck3);
+
+            return null;
+            
         }
     }
 }

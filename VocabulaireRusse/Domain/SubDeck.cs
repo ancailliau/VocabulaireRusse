@@ -6,29 +6,42 @@ using SQLiteNetExtensions.Attributes;
 
 namespace VocabulaireRusse.Domain
 {
-    public class Deck
+    public class SubDeck
     {
-        [PrimaryKey,AutoIncrement]
+        [PrimaryKey, AutoIncrement]
         public int Id
         {
             get;
             set;
         }
-       
+
         public string Name
         {
             get;
             set;
         }
-        
-        [OneToMany]
-        public List<SubDeck> SubDecks
+
+        [ForeignKey(typeof(Deck))]
+        public int DeckId
         {
             get;
             set;
         }
-    
-        public Deck()
+
+        public bool IsActive
+        {
+            get;
+            set;
+        }
+
+        [OneToMany]
+        public List<Card> Cards
+        {
+            get;
+            set;
+        }
+
+        public SubDeck()
         {
         }
     }
